@@ -1,27 +1,27 @@
-# amifcked
+# supply-chain-attack
 
-Find packages and binaries on this machine tied to known supply-chain attacks, malware campaigns, and AI security incidents.
+Scan this machine for packages and binaries tied to known supply-chain attacks, malware campaigns, and AI security incidents.
 
 ```sh
-npx amifcked
+npx supply-chain-attack
 ```
 
-`amifcked` scans local package-manager state wherever you run it: global installs, temporary `npx` installs, npm/pnpm/Yarn/Bun caches or stores, and Python user/pipx environments when present. Scoped packages are included.
+`supply-chain-attack` scans local package-manager state wherever you run it: global installs, temporary `npx` installs, npm/pnpm/Yarn/Bun caches or stores, and Python user/pipx environments when present. Scoped packages are included.
 
 A cache/store hit means the package was fetched or stored on this machine. A global or `npx` hit is stronger evidence that package code may have been installed or executed.
 
 ## Usage
 
 ```sh
-npx amifcked
+npx supply-chain-attack
 ```
 
 The CLI prints a compact verdict and exits non-zero when it finds a risky package or suspicious IOC.
 
-Interactive terminals also get a small menu:
+Interactive terminals also get a small one-line menu:
 
 ```txt
-more?  e explain  a actions  q quit  ›
+options  l learn  a actions  q quit  ›
 ```
 
 The loader and menu are disabled for JSON output, non-interactive terminals, and CI.
@@ -29,17 +29,9 @@ The loader and menu are disabled for JSON output, non-interactive terminals, and
 ## Example
 
 ```txt
-        .-""""-.
-      .'  _    _  '.
-     /   (o)  (o)   \
-    |       ____       |
-    |     .'    '.     |
-     \    `----`    /
-      '.          .'
-        `-......-`
-Verdict: YOU ARE FUCKED!! — 1 package hit
+Verdict: Potential supply-chain exposure detected — 1 package hit
 
-The shit that pinged
+Matched packages
 - npm @rspack/cli@1.1.7 (npm cache _npx)
 
 scan 6 store(s), 1842 package/version pair(s), snapshot 2026-05-12
@@ -68,7 +60,7 @@ It also checks common home-directory locations for suspicious files such as `rou
 
 ## Privacy
 
-`amifcked` uses its embedded advisory snapshot and does not send discovered package names or versions to a remote service. Set `NO_COLOR=1` for plain text output.
+`supply-chain-attack` uses its embedded advisory snapshot and does not send discovered package names or versions to a remote service. Set `NO_COLOR=1` for plain text output.
 
 ## If You Get a Hit
 
@@ -80,7 +72,7 @@ Treat the machine as potentially exposed:
 4. Rotate exposed tokens and credentials.
 5. Check for unexpected persistence files or workflow changes.
 
-Use menu option `1` for attack-chain context and option `2` for a cleanup prompt you can paste into a coding/security agent.
+Use menu option `l` for attack-chain context and option `a` for a cleanup prompt you can paste into a coding/security agent.
 
 ## Limitations
 
@@ -96,8 +88,8 @@ This is a detection tool, not a full incident-response platform.
 ```sh
 npm test
 npm run check
-node bin/amifcked.js
-npm exec --package=. -- amifcked
+node bin/supply-chain-attack.js
+npm exec --package=. -- supply-chain-attack
 ```
 
 ## Publishing

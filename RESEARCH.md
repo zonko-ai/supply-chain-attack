@@ -29,7 +29,7 @@ The embedded snapshot currently covers 438 package/version artifacts across npm,
 Use:
 
 ```sh
-node bin/amifcked.js --list-advisories
+node bin/supply-chain-attack.js --list-advisories
 ```
 
 to see the exact artifact count and source URLs embedded in the package.

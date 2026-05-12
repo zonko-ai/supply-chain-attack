@@ -1,19 +1,19 @@
 {
-  "name": "amifcked",
-  "version": "0.1.5",
-  "description": "Find installed binaries and packages tied to supply-chain attacks or AI security incidents.",
+  "name": "supply-chain-attack",
+  "version": "0.1.6",
+  "description": "Scan local package-manager state for known supply-chain attack indicators.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zonko-ai/amifcked.git"
+    "url": "git+https://github.com/zonko-ai/supply-chain-attack.git"
   },
   "bugs": {
-    "url": "https://github.com/zonko-ai/amifcked/issues"
+    "url": "https://github.com/zonko-ai/supply-chain-attack/issues"
   },
-  "homepage": "https://github.com/zonko-ai/amifcked#readme",
+  "homepage": "https://github.com/zonko-ai/supply-chain-attack#readme",
   "type": "commonjs",
   "bin": {
-    "amifcked": "bin/amifcked.js"
+    "supply-chain-attack": "bin/supply-chain-attack.js"
   },
   "files": [
     "bin",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "test": "node --test",
-    "check": "node --check bin/amifcked.js && node --check lib/advisories.js && node --check lib/cli.js && node --check lib/live-osv.js && node --check lib/parsers.js && node --check lib/scanner.js"
+    "check": "node --check bin/supply-chain-attack.js && node --check lib/advisories.js && node --check lib/cli.js && node --check lib/live-osv.js && node --check lib/parsers.js && node --check lib/scanner.js"
   },
   "engines": {
     "node": ">=18"
@@ -35,6 +35,6 @@
     "malware",
     "npm",
     "pypi",
-    "ai"
+    "scanner"
   ]
 }

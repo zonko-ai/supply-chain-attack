@@ -259,12 +259,11 @@ test('formats human report with compact verdict and privacy-safe evidence', () =
     advisoryArtifactCount: 438,
   }, { color: false });
 
-  assert.match(report, /Verdict: YOU ARE FUCKED!!/);
-  assert.doesNotMatch(report, /^amifucked/m);
+  assert.match(report, /Verdict: Potential supply-chain exposure detected/);
   assert.match(report, /1 package hit/);
   assert.doesNotMatch(report, /skull receipt/);
   assert.doesNotMatch(report, /Share this without doxxing your machine/);
-  assert.match(report, /The shit that pinged/);
+  assert.match(report, /Matched packages/);
   assert.match(report, /zod-to-json-schema@3\.25\.1/);
   assert.doesNotMatch(report, /Mini Shai-Hulud/);
   assert.doesNotMatch(report, /╭|╰|│/);
@@ -282,7 +281,7 @@ test('education groups related advisories and explains the attack chain', () => 
   const education = formatEducation(sampleMiniShaiHuludResult(), { color: false });
 
   assert.equal((education.match(/Mini Shai-Hulud attack/g) || []).length, 1);
-  assert.match(education, /Learn mode/);
+  assert.match(education, /Learn: how to read this scan/);
   assert.match(education, /This is not a normal vulnerability finding/);
   assert.match(education, /Attack chain:/);
   assert.match(education, /Attackers obtained publishing access/);
@@ -296,7 +295,7 @@ test('education groups related advisories and explains the attack chain', () => 
 test('next actions prints a copy-paste agent prompt with cleanup commands', () => {
   const actions = formatNextActions(sampleMiniShaiHuludResult(), { color: false });
 
-  assert.match(actions, /copy\/paste this into your agent/);
+  assert.match(actions, /Recommended next actions/);
   assert.match(actions, /```text/);
   assert.match(actions, /npm cache clean --force/);
   assert.match(actions, /rm -rf ~\/\.npm\/_npx/);
@@ -349,7 +348,7 @@ function sampleMiniShaiHuludResult() {
 }
 
 function makeTempRepo() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'amifcked-test-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'supply-chain-attack-test-'));
 }
 
 function writeJson(filePath, value) {
