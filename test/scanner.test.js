@@ -32,6 +32,25 @@ test('detects a compromised globally installed npm CLI package and resolves its 
   assert.deepEqual(finding.binaries, ['rspack']);
 });
 
+test('skips oversized package manifests instead of reading them', async () => {
+  const root = makeTempRepo();
+  const modulesRoot = path.join(root, 'node_modules');
+  const pkgRoot = path.join(modulesRoot, '@rspack', 'cli');
+  fs.mkdirSync(pkgRoot, { recursive: true });
+  fs.writeFileSync(path.join(pkgRoot, 'package.json'), JSON.stringify({
+    name: '@rspack/cli',
+    version: '1.1.7',
+    padding: 'x'.repeat(1024 * 1024),
+  }));
+
+  const result = await scanMachine({
+    live: false,
+    locations: [{ label: 'npm global', kind: 'node_modules', path: modulesRoot }],
+  });
+
+  assert.equal(result.findings.length, 0);
+});
+
 test('detects symlinked packages in pnpm-style global node_modules', async () => {
   const root = makeTempRepo();
   const storePkg = path.join(root, 'store', '@tanstack', 'store');
