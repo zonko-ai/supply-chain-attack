@@ -259,7 +259,7 @@ test('formats human report with compact verdict and privacy-safe evidence', () =
     advisoryArtifactCount: 438,
   }, { color: false });
 
-  assert.match(report, /Verdict: YOU MIGHT BE FUCKED, BRO/);
+  assert.match(report, /Verdict: YOU ARE FUCKED!!/);
   assert.doesNotMatch(report, /^amifucked/m);
   assert.match(report, /1 package hit/);
   assert.doesNotMatch(report, /skull receipt/);

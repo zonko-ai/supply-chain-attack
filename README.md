@@ -21,9 +21,7 @@ The CLI prints a compact verdict and exits non-zero when it finds a risky packag
 Interactive terminals also get a small menu:
 
 ```txt
-1) educate me — what the hell is this vulnerability/campaign?
-2) next actions — generate a copy/paste cleanup prompt for your agent
-q) bail
+more?  e explain  a actions  q quit  ›
 ```
 
 The loader and menu are disabled for JSON output, non-interactive terminals, and CI.
@@ -31,7 +29,15 @@ The loader and menu are disabled for JSON output, non-interactive terminals, and
 ## Example
 
 ```txt
-Verdict: YOU MIGHT BE FUCKED, BRO — 1 package hit
+        .-""""-.
+      .'  _    _  '.
+     /   (o)  (o)   \
+    |       ____       |
+    |     .'    '.     |
+     \    `----`    /
+      '.          .'
+        `-......-`
+Verdict: YOU ARE FUCKED!! — 1 package hit
 
 The shit that pinged
 - npm @rspack/cli@1.1.7 (npm cache _npx)
