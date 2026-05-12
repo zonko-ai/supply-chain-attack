@@ -3,6 +3,14 @@
   "version": "0.1.1",
   "description": "Find installed binaries and packages tied to supply-chain attacks or AI security incidents.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zonko-ai/amifcked.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zonko-ai/amifcked/issues"
+  },
+  "homepage": "https://github.com/zonko-ai/amifcked#readme",
   "type": "commonjs",
   "bin": {
     "amifcked": "bin/amifcked.js"
