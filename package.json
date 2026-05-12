@@ -1,6 +1,6 @@
 {
   "name": "supply-chain-attack",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Scan local package-manager state for known supply-chain attack indicators.",
   "license": "MIT",
   "repository": {
