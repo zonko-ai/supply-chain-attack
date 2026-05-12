@@ -13,7 +13,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "amifcked": "^0.1.3"
+    "amifcked": "^0.1.4"
   },
   "engines": {
     "node": ">=18"

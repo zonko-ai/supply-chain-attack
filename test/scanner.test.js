@@ -282,9 +282,12 @@ test('education groups related advisories and explains the attack chain', () => 
   const education = formatEducation(sampleMiniShaiHuludResult(), { color: false });
 
   assert.equal((education.match(/Mini Shai-Hulud attack/g) || []).length, 1);
+  assert.match(education, /Learn mode/);
+  assert.match(education, /This is not a normal vulnerability finding/);
   assert.match(education, /Attack chain:/);
-  assert.match(education, /Attackers got access to trusted package publishing credentials/);
-  assert.match(education, /payload hunts for developer secrets/);
+  assert.match(education, /Attackers obtained publishing access/);
+  assert.match(education, /credential theft/);
+  assert.match(education, /How to interpret the location:/);
   assert.match(education, /@tanstack\/store@0\.8\.0/);
   assert.match(education, /zod-to-json-schema@3\.25\.1/);
   assert.doesNotMatch(education, /Multiple related advisories matched/);
