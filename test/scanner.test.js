@@ -260,12 +260,16 @@ test('formats human report with compact verdict and privacy-safe evidence', () =
   }, { color: false });
 
   assert.match(report, /Verdict: Potential supply-chain exposure detected/);
-  assert.match(report, /1 package hit/);
+  assert.match(report, /Affected: 1 package/);
   assert.doesNotMatch(report, /skull receipt/);
   assert.doesNotMatch(report, /Share this without doxxing your machine/);
-  assert.match(report, /Matched packages/);
+  assert.match(report, /Libraries you had:/);
   assert.match(report, /zod-to-json-schema@3\.25\.1/);
-  assert.doesNotMatch(report, /Mini Shai-Hulud/);
+  assert.doesNotMatch(report, /Supply-chain attacks checked/);
+  assert.match(report, /LATEST ATTACK/);
+  assert.doesNotMatch(report, /={3,}/);
+  assert.match(report, /Libraries you had:/);
+  assert.match(report, /zod-to-json-schema@3\.25\.1/);
   assert.doesNotMatch(report, /╭|╰|│/);
   assert.doesNotMatch(report, /privacy:/);
   assert.doesNotMatch(report, /hiding in:/);
@@ -277,19 +281,20 @@ test('formats human report with compact verdict and privacy-safe evidence', () =
   assert.doesNotMatch(report, /\/very\/long\/path/);
 });
 
-test('education groups related advisories and explains the attack chain', () => {
+test('education explains the latest attacks concisely', () => {
   const education = formatEducation(sampleMiniShaiHuludResult(), { color: false });
 
-  assert.equal((education.match(/Mini Shai-Hulud attack/g) || []).length, 1);
-  assert.match(education, /Learn: how to read this scan/);
-  assert.match(education, /This is not a normal vulnerability finding/);
-  assert.match(education, /Attack chain:/);
-  assert.match(education, /Attackers obtained publishing access/);
-  assert.match(education, /credential theft/);
-  assert.match(education, /How to interpret the location:/);
-  assert.match(education, /@tanstack\/store@0\.8\.0/);
-  assert.match(education, /zod-to-json-schema@3\.25\.1/);
-  assert.doesNotMatch(education, /Multiple related advisories matched/);
+  assert.match(education, /Learn: attacks explained/);
+  assert.match(education, /Mini Shai-Hulud expansion into AI\/devtool ecosystem packages/);
+  assert.match(education, /TanStack npm packages compromised in Mini Shai-Hulud/);
+  assert.match(education, /Affected package\/version artifacts tracked:/);
+  assert.match(education, /CanisterSprawl Brand-Squat Packages/);
+  assert.doesNotMatch(education, /You had/);
+  assert.doesNotMatch(education, /@tanstack\/store@0\.8\.0/);
+  assert.doesNotMatch(education, /zod-to-json-schema@3\.25\.1/);
+  assert.doesNotMatch(education, /Reading guide:/);
+  assert.doesNotMatch(education, /Attack chain:/);
+  assert.doesNotMatch(education, /Source:/);
 });
 
 test('next actions prints a copy-paste agent prompt with cleanup commands', () => {

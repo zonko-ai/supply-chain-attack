@@ -16,7 +16,7 @@ A cache/store hit means the package was fetched or stored on this machine. A glo
 npx supply-chain-attack
 ```
 
-The CLI prints a compact verdict and exits non-zero when it finds a risky package or suspicious IOC.
+The CLI prints a compact verdict, checks the latest 4 embedded supply-chain attacks against packages found on the machine, shows either the affected libraries present locally or “Nice” for each attack, and exits non-zero when it finds a risky package or suspicious IOC.
 
 Interactive terminals also get a small one-line menu:
 
