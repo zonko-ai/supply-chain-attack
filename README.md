@@ -1,47 +1,69 @@
-# amiscrewed
+# amifcked
 
-Find installed packages and binaries tied to known supply-chain attacks, malware campaigns, and AI security incidents.
+Find packages and binaries on this machine tied to known supply-chain attacks, malware campaigns, and AI security incidents.
 
 ```sh
-npx amiscrewed
+npx amifcked
 ```
 
-`amiscrewed` scans a repository's dependency files and installed package metadata, then reports risky package versions and the executable binaries they expose. It is designed for the incidents that matter during active supply-chain response: compromised npm releases, malicious PyPI packages, AI SDK brand-squats, poisoned CLIs, and persistence indicators from recent campaigns.
+`amifcked` is machine-oriented: it scans local package-manager state no matter where you run it from. That includes global installs, temporary `npx` installs, package-manager caches/stores such as npm, pnpm, Yarn, and Bun, plus Python user/pipx environments when present. Scoped packages are included.
+
+A cache/store hit means the package was fetched or stored on this laptop. A global or `npx` hit is stronger evidence that package code may have been installed/executed. Treat either as useful incident-response signal when the concern is a specific developer machine.
 
 ## Use It
 
-Run it inside any repository:
+Run it anywhere:
 
 ```sh
-npx amiscrewed
+npx amifcked
 ```
 
-That is the main interface. It scans the current directory, prints a readable report, and exits with a non-zero code when it finds a risky package or suspicious IOC.
+It scans this machine, prints a compact verdict plus findings, and exits with a non-zero code when it finds a risky package or suspicious IOC.
 
-While it scans, `amiscrewed` shows a tiny loader with rotating status messages like `checking how screwed you are` and `interrogating lockfiles`. The loader is automatically disabled for JSON output, non-interactive terminals, and CI.
+In an interactive terminal, `amifcked` then offers a tiny guided menu:
+
+```txt
+1) educate me — what the hell is this vulnerability/campaign?
+2) next actions — generate a copy/paste cleanup prompt for your agent
+q) bail
+```
+
+While it scans, `amifcked` shows a tiny loader with short status messages like `scanning local package-manager state` and `checking package-manager caches`. The loader and interactive menu are automatically disabled for JSON output, non-interactive terminals, and CI.
 
 ## Example Output
 
 ```txt
-am i screwed?
-Looks like something needs attention.
+Verdict: YOU MIGHT BE FUCKED, BRO — 1 package hit
 
-repo      /work/app
-snapshot  2026-05-12 (438 known package/version artifacts)
-live      OSV checked
+The shit that pinged
+- npm @rspack/cli@1.1.7 (npm cache _npx)
 
-Findings: 1 risky package install(s), 1 binary command(s), 0 suspicious IOC file(s)
+scan 6 store(s), 1842 package/version pair(s), snapshot 2026-05-12
 
-CRITICAL npm @rspack/cli@1.1.7
-  bins     rspack
-  seen in  package-lock.json, node_modules/@rspack/cli/package.json
-  why      SOCKET-rspack-2025-12 - Rspack npm packages compromised
-  source: https://socket.dev/blog/rspack-npm-packages-compromised
+Pick your next move:
+  1) educate me — what the hell is this vulnerability/campaign?
+  2) next actions — generate a copy/paste cleanup prompt for your agent
+  q) bail
 ```
+
+Option `1` explains the actual attack chain: how poisoned package versions get published, how install/CLI execution can happen, what secrets attackers want, and what your cache/global/npx hit means.
+
+Option `2` prints a prompt you can paste into a coding/security agent. The prompt explicitly asks the agent to work through cleanup safely, inspect project lockfiles/manifests, suggest or run cleanup commands, and help with token-rotation without printing secrets.
 
 ## What It Checks
 
 The embedded offline snapshot is dated `2026-05-12` and currently covers `438` package/version artifacts.
+
+It checks local machine locations such as:
+
+- npm global packages
+- npm cache tarball records
+- npm `_npx` temporary installs
+- pnpm global packages
+- pnpm content-addressed store package manifests
+- Yarn global packages and cache entries
+- Bun global packages and cache entries
+- Python user site-packages and pipx virtual environments
 
 It includes Socket-reported and related advisories for:
 
@@ -53,34 +75,11 @@ It includes Socket-reported and related advisories for:
 - Rspack
 - Nx `s1ngularity`
 
-By default, the tool also queries OSV for live malicious, supply-chain, and AI-related vulnerability records that may have been published after the embedded snapshot.
-
-## Supported Files
-
-npm and JavaScript:
-
-- `package-lock.json`
-- `npm-shrinkwrap.json`
-- `pnpm-lock.yaml`
-- `yarn.lock`
-- Exact pins in `package.json`
-- Installed `node_modules` package metadata
-- Executable links in `node_modules/.bin`
-
-Python:
-
-- `requirements*.txt`
-- `poetry.lock`
-
-Composer:
-
-- `composer.lock`
-
-The scanner also looks for suspicious files such as `router_runtime.js` and `setup.mjs` when their contents match credential-exfiltration or persistence markers from recent supply-chain campaigns.
+The scanner also looks in common home-directory locations for suspicious files such as `router_runtime.js` and `setup.mjs` when their contents match credential-exfiltration or persistence markers from recent supply-chain campaigns.
 
 ## Why Wasn't My TanStack Usage Flagged?
 
-Using TanStack is not itself a finding. `amiscrewed` flags specific compromised package/version pairs, such as the Mini Shai-Hulud affected TanStack releases from May 2026. If your repo uses TanStack but the lockfile does not contain those affected versions, the scanner should stay quiet.
+Using TanStack is not itself a finding. `amifcked` flags specific compromised package/version pairs, such as the Mini Shai-Hulud affected TanStack releases from May 2026. If this machine does not have those exact package versions in its package-manager state, the scanner should stay quiet.
 
 ## Exit Codes
 
@@ -88,39 +87,33 @@ Using TanStack is not itself a finding. `amiscrewed` flags specific compromised 
 - `1`: scan completed and findings were detected.
 - `2`: CLI usage or runtime error.
 
-## CI Usage
-
-Use the same command in CI. It fails the build if a risky package version or suspicious IOC is found:
-
-```sh
-npx amiscrewed
-```
-
 ## Privacy
 
-By default, `amiscrewed` uses its embedded advisory snapshot and asks OSV about discovered package names and versions. Set `NO_COLOR=1` if your terminal or CI system should receive plain text without ANSI colors.
+`amifcked` uses its embedded advisory snapshot and scans local package-manager state. It does not send discovered package names or versions to a remote service. Set `NO_COLOR=1` if your terminal or CI system should receive plain text without ANSI colors.
 
 ## Response Guidance
 
-If the tool reports a hit, treat any machine or CI job that installed the package as potentially exposed.
+If the tool reports a hit, treat this machine as potentially exposed. Use the interactive menu for the short version:
+
+- `1` explains the actual attack chain, why the machine was flagged, and whether the hit looks like cache-only evidence or possible execution.
+- `2` prints a copy/paste prompt for a coding/security agent, including cleanup commands, project inspection steps, and token-rotation guidance. It tells the agent to work on the cleanup safely and never print/store secrets.
 
 Recommended response:
 
-1. Remove or pin away from the affected version.
-2. Regenerate the lockfile from a clean environment.
-3. Reinstall dependencies.
+1. Remove global or `npx` installs of the affected version.
+2. Clear the relevant package-manager cache/store entry.
+3. Inspect projects that may have installed the package.
 4. Rotate tokens and credentials that may have been exposed.
-5. Inspect developer machines and CI hosts for persistence files or unexpected workflow changes.
+5. Inspect developer-machine persistence files or unexpected workflow changes.
 
 ## Limitations
 
 This is a detection tool, not a complete incident-response platform.
 
+- A cache/store hit is evidence that a package was present on the machine, not proof that a particular project imported it.
 - The embedded advisory snapshot is curated and dated.
-- Live OSV mode improves freshness but depends on OSV coverage and network availability.
-- A clean result does not prove a repository is free of malicious packages.
-- Lockfiles are the strongest signal. Loose dependency ranges in manifests can only be matched when they are exact pins.
-- Binary detection is best for installed npm dependencies where `node_modules` is present.
+- A clean result does not prove the machine is free of malicious packages.
+- Package-manager stores can be content-addressed and metadata-light; some entries may not expose package names and versions.
 
 ## Development
 
@@ -134,13 +127,13 @@ npm run check
 Run the CLI locally:
 
 ```sh
-node bin/amiscrewed.js
+node bin/amifcked.js
 ```
 
 Test the package execution path:
 
 ```sh
-npm exec --package=. -- amiscrewed
+npm exec --package=. -- amifcked
 ```
 
 ## Publishing

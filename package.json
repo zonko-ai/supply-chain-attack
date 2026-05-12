@@ -1,11 +1,11 @@
 {
-  "name": "amiscrewed",
-  "version": "0.1.0",
+  "name": "amifcked",
+  "version": "0.1.1",
   "description": "Find installed binaries and packages tied to supply-chain attacks or AI security incidents.",
   "license": "MIT",
   "type": "commonjs",
   "bin": {
-    "amiscrewed": "bin/amiscrewed.js"
+    "amifcked": "bin/amifcked.js"
   },
   "files": [
     "bin",
@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "test": "node --test",
-    "check": "node --check bin/amiscrewed.js && node --check lib/advisories.js && node --check lib/cli.js && node --check lib/live-osv.js && node --check lib/parsers.js && node --check lib/scanner.js"
+    "check": "node --check bin/amifcked.js && node --check lib/advisories.js && node --check lib/cli.js && node --check lib/live-osv.js && node --check lib/parsers.js && node --check lib/scanner.js"
   },
   "engines": {
     "node": ">=18"

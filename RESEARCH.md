@@ -5,7 +5,6 @@ Snapshot date: 2026-05-12.
 The scanner data is intentionally split into:
 
 - An embedded offline snapshot in `lib/advisories.js`.
-- A default live OSV lookup for package/version matches that were published after the snapshot or missed by the curated data.
 
 ## Sources Used
 
@@ -30,7 +29,7 @@ The embedded snapshot currently covers 438 package/version artifacts across npm,
 Use:
 
 ```sh
-node bin/amiscrewed.js --offline --list-advisories
+node bin/amifcked.js --list-advisories
 ```
 
 to see the exact artifact count and source URLs embedded in the package.
