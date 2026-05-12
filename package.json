@@ -1,6 +1,6 @@
 {
   "name": "amifcked",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Find installed binaries and packages tied to supply-chain attacks or AI security incidents.",
   "license": "MIT",
   "repository": {
