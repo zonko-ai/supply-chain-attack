@@ -1,45 +1,51 @@
 # supply-chain-attack
 
-Scan this machine for packages and binaries tied to known supply-chain attacks, malware campaigns, and AI security incidents.
+Scan local package-manager state for packages and files associated with known supply-chain attacks.
 
 ```sh
 npx supply-chain-attack
 ```
 
-`supply-chain-attack` scans local package-manager state wherever you run it: global installs, temporary `npx` installs, npm/pnpm/Yarn/Bun caches or stores, and Python user/pipx environments when present. Scoped packages are included.
+The scanner runs offline against an embedded advisory snapshot and checks global installs, temporary `npx` installs, npm/pnpm/Yarn/Bun caches or stores, and Python user/pipx environments when present. It also flags npm packages whose `postinstall` script invokes `curl`, or points at a local install file that invokes `curl`, for quick install-script review.
 
-A cache/store hit means the package was fetched or stored on this machine. A global or `npx` hit is stronger evidence that package code may have been installed or executed.
+## Output
 
-## Usage
+The default report is compact and terminal-friendly. It highlights the verdict, the latest tracked attacks, affected packages found locally, packages with `postinstall` scripts that invoke `curl` directly or through a referenced local file, and scan scope. Colors use a muted minimalist palette and can be disabled with `NO_COLOR=1` or `--no-color`.
 
-```sh
-npx supply-chain-attack
+```txt
+Verdict: Potential supply-chain exposure detected — 4 package hits
+
+LATEST ATTACK
+Mini Shai-Hulud expansion into AI/devtool ecosystem packages (2026-05-12)
+Affected: 3 packages
+Libraries you had:
+- npm lightningcss-darwin-arm64@1.30.2 (pnpm store)
+
+scan 5 store(s), 4724 package/version pair(s), snapshot 2026-05-12
 ```
 
-The CLI prints a compact verdict, checks the latest 4 embedded supply-chain attacks against packages found on the machine, shows either the affected libraries present locally or “Nice” for each attack, and exits non-zero when it finds a risky package or suspicious IOC.
-
-Interactive terminals also get a small one-line menu:
+Interactive terminals include a small menu for context and remediation prompts:
 
 ```txt
 options  l learn  a actions  q quit  ›
 ```
 
-The loader and menu are disabled for JSON output, non-interactive terminals, and CI.
+## Usage
 
-## Example
-
-```txt
-Verdict: Potential supply-chain exposure detected — 1 package hit
-
-Matched packages
-- npm @rspack/cli@1.1.7 (npm cache _npx)
-
-scan 6 store(s), 1842 package/version pair(s), snapshot 2026-05-12
+```sh
+npx supply-chain-attack
+npx supply-chain-attack --json
+npx supply-chain-attack --list-advisories
+npx supply-chain-attack --no-interactive
+npx supply-chain-attack --no-color
 ```
 
-## What It Checks
+By default, the command exits non-zero when findings are detected. Use `--fail-on none` to always exit `0` unless there is a usage or runtime error.
 
-The embedded offline snapshot is dated `2026-05-12` and covers `438` package/version artifacts.
+## Coverage
+
+Snapshot: `2026-05-12`  
+Tracked artifacts: `438` package/version entries
 
 Local sources include:
 
@@ -47,41 +53,27 @@ Local sources include:
 - pnpm global packages and content-addressed store manifests
 - Yarn and Bun global/cache entries
 - Python user site-packages and pipx virtual environments
-
-Advisory coverage includes Mini Shai-Hulud/TanStack, Mistral, UiPath, Squawk, OpenSearch, Lightning, Guardrails AI, SAP CAP, Intercom, Namastex.ai, CanisterWorm, CanisterSprawl, Axios, `plain-crypto-js`, Rspack, and Nx `s1ngularity`.
-
-It also checks common home-directory locations for suspicious files such as `router_runtime.js` and `setup.mjs` when contents match known credential-exfiltration or persistence markers.
+- Selected suspicious home-directory files matching known campaign indicators
 
 ## Exit Codes
 
-- `0`: no findings
+- `0`: no findings, or `--fail-on none`
 - `1`: findings detected
 - `2`: usage or runtime error
 
 ## Privacy
 
-`supply-chain-attack` uses its embedded advisory snapshot and does not send discovered package names or versions to a remote service. Set `NO_COLOR=1` for plain text output.
+No discovered package names, versions, paths, or files are sent to a remote service. The default scan uses only the embedded offline snapshot.
 
-## If You Get a Hit
+## Interpreting Findings
 
-Treat the machine as potentially exposed:
+A cache/store hit means the package was present on this machine. A global or `npx` hit is stronger evidence that package code may have been installed or executed.
 
-1. Remove affected global or `npx` installs.
-2. Clear relevant package-manager cache/store entries.
-3. Inspect projects that may have installed the package.
-4. Rotate exposed tokens and credentials.
-5. Check for unexpected persistence files or workflow changes.
-
-Use menu option `l` for attack-chain context and option `a` for a cleanup prompt you can paste into a coding/security agent.
+If you get a hit, treat the machine as potentially exposed: remove affected installs, clear relevant caches, inspect dependent projects, rotate exposed credentials, and check for persistence or workflow changes.
 
 ## Limitations
 
-This is a detection tool, not a full incident-response platform.
-
-- Cache/store hits show package presence, not project usage.
-- The advisory snapshot is curated and dated.
-- A clean result does not prove the machine is free of malicious packages.
-- Some package-manager stores may not expose package names and versions.
+This is a detection aid, not a complete incident-response platform. A clean result does not prove the machine is malware-free, and the embedded advisory snapshot is necessarily dated.
 
 ## Development
 
@@ -89,23 +81,13 @@ This is a detection tool, not a full incident-response platform.
 npm test
 npm run check
 node bin/supply-chain-attack.js
-npm exec --package=. -- supply-chain-attack
-```
-
-## Publishing
-
-```sh
-npm test
-npm run check
-npm pack --dry-run
-npm publish
 ```
 
 The package has no runtime npm dependencies and requires Node.js `18` or newer.
 
 ## Research
 
-The research trail and source URLs are in [`RESEARCH.md`](./RESEARCH.md).
+Source notes are maintained in [`RESEARCH.md`](./RESEARCH.md).
 
 ## License
 
