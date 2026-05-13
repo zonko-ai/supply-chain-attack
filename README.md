@@ -6,11 +6,11 @@ Scan local package-manager state for packages and files associated with known su
 npx supply-chain-attack
 ```
 
-The scanner runs offline against an embedded advisory snapshot and checks global installs, temporary `npx` installs, npm/pnpm/Yarn/Bun caches or stores, and Python user/pipx environments when present. It also flags npm packages whose `postinstall` script invokes `curl`, or points at a local install file that invokes `curl`, for quick install-script review.
+The scanner runs offline against an embedded advisory snapshot and checks global installs, temporary `npx` installs, npm/pnpm/Yarn/Bun caches or stores, and Python user/pipx environments when present. It also flags npm packages whose `postinstall` script performs network-fetch behavior (`curl`, `wget`, JavaScript `fetch`, or Node `http`/`https` requests), including when `postinstall` points at a local install file that performs the fetch.
 
 ## Output
 
-The default report is compact and terminal-friendly. It highlights the verdict, the latest tracked attacks, affected packages found locally, packages with `postinstall` scripts that invoke `curl` directly or through a referenced local file, and scan scope. Colors use a muted minimalist palette and can be disabled with `NO_COLOR=1` or `--no-color`.
+The default report is compact and terminal-friendly. It highlights the verdict, the latest tracked attacks, affected packages found locally, packages with `postinstall` network-fetch behavior, and scan scope. Colors use a muted minimalist palette and can be disabled with `NO_COLOR=1` or `--no-color`.
 
 ```txt
 Verdict: Potential supply-chain exposure detected — 4 package hits

